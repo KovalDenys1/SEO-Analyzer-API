@@ -1,126 +1,114 @@
-<div align="center">
+# SEO Analyzer API
 
-# seo.analyzer
+A REST API for on-page SEO analysis built with Python and FastAPI. Returns metadata, heading structure, link stats, image alt coverage, keyword density, and a composite score for any public URL.
 
-**Analyze any page's SEO in milliseconds.**
-
-Fast, accurate SEO analysis via API. Metadata, headings, links, images, keyword density, and a score — in a single round-trip.
-
-![version](https://img.shields.io/badge/version-v1.4.2-0D9488?style=flat-square)
-![build](https://img.shields.io/badge/build-passing-1a7f37?style=flat-square)
-![coverage](https://img.shields.io/badge/coverage-96%25-1a7f37?style=flat-square)
-![node](https://img.shields.io/badge/node-%E2%89%A518-0969da?style=flat-square)
-![license](https://img.shields.io/badge/license-MIT-0969da?style=flat-square)
-![downloads](https://img.shields.io/badge/downloads-124k%2Fwk-0969da?style=flat-square)
-
-</div>
-
-A production-grade REST API for on-page SEO analysis. One endpoint, JSON in & JSON out, six checks per page, P95 latency under 200ms across 12 regions.
-
-> ⚡ **Try it without signing up** — the `/v1/quick-score` endpoint accepts 100 requests/day without an API key. Production keys take 30 seconds to set up.
+Available on [RapidAPI](https://rapidapi.com) under the `seo-analyzer` listing.
 
 ---
 
-## 01 — Quick start
+## Endpoints
 
-Install the SDK or just `curl` the endpoint directly. The shape of the response is the same either way.
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/analyze` | Full analysis — all checks, composite score |
+| `GET` | `/quick-score` | Score + top warnings only (faster) |
+| `GET` | `/metadata` | Title, description, OG tags, canonical, robots |
+
+### Parameters
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `url` | `string` | Yes | The page to analyze (must be publicly accessible) |
+
+---
+
+## Quick start
 
 ```bash
-npm install @seo-analyzer/sdk
-export SEO_ANALYZER_KEY="sk_live_..."
-
-# or with curl — no SDK needed
-curl https://api.seo-analyzer.dev/v1/analyze \
-    -H "Authorization: Bearer $SEO_ANALYZER_KEY" \
-    -d '{"url":"https://stripe.com/pricing"}'
+curl "https://your-rapidapi-host/analyze?url=https://example.com" \
+  -H "X-RapidAPI-Key: YOUR_KEY" \
+  -H "X-RapidAPI-Host: YOUR_HOST"
 ```
 
-### Or in your code
+### Response shape
 
-```ts
-import { seo } from '@seo-analyzer/sdk';
-
-const { score, warnings, meta } = await seo.analyze({
-  url: 'https://stripe.com',
-  include: ['meta', 'links', 'images'],
-});
-
-console.log(score);     // → 87
-console.log(warnings);  // → ['missing_canonical', 'lcp_slow']
-```
-
----
-
-## 02 — What it checks
-
-| Feature | Description | Endpoint |
-|---|---|---|
-| **Meta Analysis** | Title, description, OG/twitter cards, canonical, robots, lang, viewport | `GET /v1/metadata` |
-| **Headings outline** | Full H1–H6 outline with depth, order, and accessibility flags | `GET /v1/headings` |
-| **Link audit** | Internal vs external, dofollow/nofollow, status codes, broken links | `GET /v1/links` |
-| **Image alt check** | Total images, missing alt text, dimensions, lazy-loading hints | `GET /v1/images` |
-| **Keyword density** | Top terms, n-grams, stop-word filtered counts and ratios | `GET /v1/keywords` |
-| **Load time / Web Vitals** | TTFB, LCP, CLS, INP, render-blocking resources | `GET /v1/performance` |
-
----
-
-## 03 — Pricing
-
-Pay for what you ship. No seats, no minimums — upgrade when you outgrow Free.
-
-| Plan | Price | Quota | Endpoints | Support |
-|---|---|---|---|---|
-| **Free** | $0 | 100 / day | `/quick-score` only | Community |
-| **Pro** ⭐ | $9 / mo | 5,000 / day | All endpoints | Email · 1 day |
-| **Business** | $29 / mo | 50,000 / day | All + `/batch` | SLA · dedicated |
-
----
-
-## 04 — Architecture
-
-The repo is a small monorepo. Each package can be vendored or installed independently.
-
-```
-seo-analyzer/
-├── packages/
-│   ├── core      // extractors: meta, headings, links, images, perf
-│   ├── sdk       // typed client: @seo-analyzer/sdk
-│   └── cli       // `npx seo-analyze https://...`
-├── apps/
-│   ├── api       // public REST API · FastAPI + Python
-│   └── dashboard // Next.js · keys, billing, usage
-└── infra/        // terraform · 12 regions
+```json
+{
+  "url": "https://example.com",
+  "score": 87,
+  "warnings": ["missing_canonical", "images_missing_alt"],
+  "meta": {
+    "title": "Example Domain",
+    "description": "...",
+    "canonical": null,
+    "robots": "index, follow",
+    "og_image": "https://example.com/og.png",
+    "lang": "en"
+  },
+  "headings": [
+    { "level": 1, "text": "Example Domain" }
+  ],
+  "links": {
+    "internal": 4,
+    "external": 2,
+    "dofollow": 5,
+    "nofollow": 1,
+    "broken": []
+  },
+  "images": {
+    "total": 3,
+    "missing_alt": ["https://example.com/hero.png"]
+  },
+  "keywords": [
+    { "term": "example", "count": 12, "density": 0.042 }
+  ],
+  "performance": {
+    "ttfb_ms": 188,
+    "lcp_s": 1.8,
+    "cls": 0.02
+  }
+}
 ```
 
 ---
 
-## 05 — Self-hosting
+## Running locally
 
-Use the open-source core directly — no API key needed.
-
-```python
-from seo_analyzer import analyze
-
-result = await analyze("https://stripe.com/pricing", timeout=5000)
-print(result.score)     # → 87
-print(result.warnings)  # → ['missing_canonical', 'lcp_slow']
+```bash
+git clone https://github.com/KovalDenys1/SEO-Analyzer-API.git
+cd SEO-Analyzer-API
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
----
-
-## 06 — Contributing
-
-PRs welcome. Quick rules:
-
-- Open an issue first for any new endpoint or behavior change
-- All extractors must come with golden fixtures (real-world HTML)
-- Run tests before pushing: `pytest` / `pnpm test`
-- Conventional commits: `feat(api):`, `fix(core):`, `docs:`
+The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
 
 ---
 
-<div align="center">
+## Score calculation
 
-Built by [@KovalDenys1](https://github.com/KovalDenys1) · [RapidAPI](https://rapidapi.com) · [Changelog](#)
+The composite score (0–100) is weighted across six checks:
 
-</div>
+| Check | Weight |
+|---|---|
+| Meta completeness | 25% |
+| Heading structure | 15% |
+| Link health | 15% |
+| Image alt coverage | 15% |
+| Keyword presence | 15% |
+| Performance (LCP, CLS) | 15% |
+
+---
+
+## Tech stack
+
+- **Python 3.11** + **FastAPI**
+- **BeautifulSoup4** for HTML parsing
+- **httpx** for async page fetching
+- In-memory response cache (TTL 5 min)
+
+---
+
+## License
+
+MIT

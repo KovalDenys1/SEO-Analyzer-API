@@ -1,114 +1,141 @@
-# SEO Analyzer API
+# SaaS SEO Analyzer API
 
-A REST API for on-page SEO analysis built with Python and FastAPI. Returns metadata, heading structure, link stats, image alt coverage, keyword density, and a composite score for any public URL.
+A security-first FastAPI service for technical SEO, SaaS acquisition strategy, sampled site crawling, page comparison, and first-party opportunity ranking.
 
-Available on [RapidAPI](https://rapidapi.com) under the `seo-analyzer` listing.
+This fork is a ground-up v2 implementation of [KovalDenys1/SEO-Analyzer-API](https://github.com/KovalDenys1/SEO-Analyzer-API). It keeps the original GET endpoints for compatibility while replacing the one-file analyzer with a tested, explainable, asynchronous engine.
 
----
+## What it does
+
+- Audits status, redirects, indexability, canonical hints, metadata, headings, content, internal links, images, language, mobile setup, social previews, and JSON-LD.
+- Classifies SaaS pages such as pricing, feature, use case, industry, integration, template, comparison, alternative, free tool, docs, case study, security, and changelog pages.
+- Scores **core SEO health separately from SaaS acquisition/conversion readiness**.
+- Produces evidence-backed issues and ranked recommendations with impact, effort, confidence, validation, and affected pages.
+- Crawls a bounded site sample while respecting `robots.txt`, discovering XML sitemap indexes, and detecting sampled broken links, exact duplicates, weak internal linking, and potential orphan pages.
+- Assesses seven SaaS strategy pillars: commercial foundation, audience/use cases, product-led acquisition, bottom-funnel evaluation, authority, trust, and product enablement.
+- Compares up to eight pages without mislabeling the result as a Google ranking.
+- Ranks supplied Search Console/conversion rows by traffic and revenue opportunity without inventing external keyword or SERP data.
+- Optionally enriches a page with Google PageSpeed Insights v5 lab/field data.
+
+## Safety by default
+
+The service fetches user-supplied URLs, so URL handling is part of the security boundary:
+
+- only HTTP(S) on configured ports;
+- credentials in URLs are rejected;
+- private, loopback, link-local, multicast, and reserved addresses are rejected;
+- every DNS answer and every redirect target is validated;
+- the request connects to the validated IP while preserving the public Host/SNI identity, limiting DNS-rebinding exposure;
+- proxy environment variables are ignored;
+- response time, redirect count, concurrency, and decompressed response size are bounded;
+- optional `X-API-Key` authentication;
+- bounded TTL/LRU cache and request coalescing.
+
+Private-network access can be enabled for a trusted internal deployment, but it is off by default.
 
 ## Endpoints
 
-| Method | Path | Description |
+| Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/analyze` | Full analysis — all checks, composite score |
-| `GET` | `/quick-score` | Score + top warnings only (faster) |
-| `GET` | `/metadata` | Title, description, OG tags, canonical, robots |
+| `GET` | `/v1/analyze?url=…` | Full page report; optional PageSpeed and subdomain scope |
+| `POST` | `/v1/site-audit` | Bounded robots-aware crawl and SaaS strategy assessment |
+| `POST` | `/v1/compare` | Relative SEO/SaaS comparison for 2–8 pages |
+| `POST` | `/v1/opportunities` | First-party traffic/revenue opportunity ranking |
+| `GET` | `/analyze` | Backwards-compatible original full-analysis shape plus `v2` data |
+| `GET` | `/quick-score` | Score, warnings, and top recommendations |
+| `GET` | `/metadata` | Metadata, headings, social, and canonical data |
+| `GET` | `/healthz`, `/readyz`, `/metrics` | Health, readiness, and Prometheus metrics |
 
-### Parameters
-
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `url` | `string` | Yes | The page to analyze (must be publicly accessible) |
-
----
+Interactive OpenAPI docs are available at `/docs` and `/redoc`.
 
 ## Quick start
 
-```bash
-curl "https://your-rapidapi-host/analyze?url=https://example.com" \
-  -H "X-RapidAPI-Key: YOUR_KEY" \
-  -H "X-RapidAPI-Host: YOUR_HOST"
-```
-
-### Response shape
-
-```json
-{
-  "url": "https://example.com",
-  "score": 87,
-  "warnings": ["missing_canonical", "images_missing_alt"],
-  "meta": {
-    "title": "Example Domain",
-    "description": "...",
-    "canonical": null,
-    "robots": "index, follow",
-    "og_image": "https://example.com/og.png",
-    "lang": "en"
-  },
-  "headings": [
-    { "level": 1, "text": "Example Domain" }
-  ],
-  "links": {
-    "internal": 4,
-    "external": 2,
-    "dofollow": 5,
-    "nofollow": 1,
-    "broken": []
-  },
-  "images": {
-    "total": 3,
-    "missing_alt": ["https://example.com/hero.png"]
-  },
-  "keywords": [
-    { "term": "example", "count": 12, "density": 0.042 }
-  ],
-  "performance": {
-    "ttfb_ms": 188,
-    "lcp_s": 1.8,
-    "cls": 0.02
-  }
-}
-```
-
----
-
-## Running locally
+Python 3.11–3.14 is supported.
 
 ```bash
-git clone https://github.com/KovalDenys1/SEO-Analyzer-API.git
-cd SEO-Analyzer-API
-pip install -r requirements.txt
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -e '.[dev]'
 uvicorn main:app --reload
 ```
 
-The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+Analyze a page:
 
----
+```bash
+curl --get http://127.0.0.1:8000/v1/analyze \
+  --data-urlencode 'url=https://example.com'
+```
 
-## Score calculation
+Audit a site sample:
 
-The composite score (0–100) is weighted across six checks:
+```bash
+curl http://127.0.0.1:8000/v1/site-audit \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://example.com",
+    "max_pages": 25,
+    "max_depth": 3,
+    "concurrency": 5,
+    "respect_robots": true,
+    "use_sitemap": true
+  }'
+```
 
-| Check | Weight |
-|---|---|
-| Meta completeness | 25% |
-| Heading structure | 15% |
-| Link health | 15% |
-| Image alt coverage | 15% |
-| Keyword presence | 15% |
-| Performance (LCP, CLS) | 15% |
+If `SEO_API_KEY` is set, add `-H 'X-API-Key: …'` to protected endpoints.
 
----
+## Docker
 
-## Tech stack
+The image runs as a non-root user. The Compose example binds only to loopback, drops Linux capabilities, uses a read-only filesystem, and adds a health check.
 
-- **Python 3.11** + **FastAPI**
-- **BeautifulSoup4** for HTML parsing
-- **httpx** for async page fetching
-- In-memory response cache (TTL 5 min)
+```bash
+cp .env.example .env
+docker compose up --build
+```
 
----
+## Configuration
 
-## License
+All settings use the `SEO_` prefix. See [`.env.example`](.env.example) for the complete list.
 
-MIT
+| Variable | Default | Meaning |
+|---|---:|---|
+| `SEO_API_KEY` | empty | Optional `X-API-Key` shared secret |
+| `SEO_FETCH_TIMEOUT_SECONDS` | `12` | Upstream request timeout |
+| `SEO_MAX_RESPONSE_BYTES` | `3000000` | Maximum decompressed page/resource body |
+| `SEO_MAX_REDIRECTS` | `5` | Redirect budget |
+| `SEO_MAX_CONCURRENT_FETCHES` | `8` | Process-wide fetch concurrency |
+| `SEO_ALLOW_PRIVATE_HOSTS` | `false` | Permit non-public targets; trusted deployments only |
+| `SEO_CACHE_TTL_SECONDS` | `300` | Analysis cache TTL; `0` disables cache |
+| `SEO_MAX_SITE_PAGES` | `100` | Server-side hard cap for a site audit |
+| `SEO_ENABLE_PAGESPEED` | `false` | Permit quota-consuming PageSpeed calls |
+| `SEO_PAGESPEED_API_KEY` | empty | Optional Google API key |
+| `SEO_CORS_ORIGINS` | empty | Comma-separated browser origins |
+
+## Scores are diagnostics, not promises
+
+The core score is a weighted, fully explainable health summary. Every deduction maps to an issue code and evidence. The SaaS score is a separate page-type-aware acquisition/conversion heuristic. Site strategy maturity measures detected coverage in the bounded sample.
+
+None of these scores predicts a Google position, traffic, revenue, content quality, or rich-result eligibility. The network timer is not LCP/INP/CLS. Browser performance is reported only when PageSpeed is explicitly enabled. See [the scoring methodology](docs/METHODOLOGY.md) for weights and caveats.
+
+## Development
+
+```bash
+ruff check .
+ruff format --check .
+mypy seo_analyzer
+pytest --cov --cov-report=term-missing
+pip-audit
+```
+
+The suite covers URL security, DNS/redirect validation, parsing, page classification, issue scoring, sitemap/robots behavior, crawl aggregation, PageSpeed normalization, API compatibility, auth, and opportunity ranking.
+
+## Documentation
+
+- [API guide](docs/API.md)
+- [Scoring methodology](docs/METHODOLOGY.md)
+- [SaaS SEO strategy playbook](docs/SAAS_SEO_PLAYBOOK.md)
+- [Original-project audit](docs/UPSTREAM_AUDIT.md)
+- [Security model](docs/SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
+## License and attribution
+
+MIT. The upstream project is copyright Denys Koval; this fork preserves the original license and history. See [LICENSE](LICENSE).

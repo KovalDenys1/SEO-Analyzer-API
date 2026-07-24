@@ -1,34 +1,24 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
-We release patches for security vulnerabilities as soon as possible.  
-The following table shows which versions are currently supported with security updates:
+## Supported versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| latest  | ✅                 |
-| < latest| ❌                 |
+Security fixes are provided for the latest release on the `main` branch.
 
----
+| Version | Supported |
+|---|:---:|
+| Latest | Yes |
+| Older releases | No |
 
-## Reporting a Vulnerability
-If you discover a security vulnerability in this project, please help us by reporting it.
+## Reporting a vulnerability
 
-- **Do not** create a public GitHub Issue.  
-- Instead, send an email to: kovaldenys@icloud.com
-- Provide as much detail as possible:
-  - Steps to reproduce the issue  
-  - Potential impact  
-  - Any suggested fix  
+Do not open a public issue for an undisclosed vulnerability. Use GitHub's **Report a vulnerability** flow in the Security tab of this repository to submit a private security advisory.
 
-We will:
-1. Confirm receipt of your report.  
-2. Investigate and assess the issue.  
-3. Release a fix as soon as possible.  
-4. Credit you (if desired) in the release notes.  
+Include the affected commit/version, reproduction steps, expected impact and any suggested mitigation. Do not include credentials or data that you are not authorized to share.
 
----
+The maintainer will acknowledge the report, assess severity, coordinate a fix and publish disclosure details after users have had a reasonable opportunity to update. Reporter credit is optional.
 
-## Responsible Disclosure
-Please do not disclose the vulnerability publicly until we have released a patch.  
-We are committed to working with security researchers to resolve issues responsibly.
+## Scope
+
+Reports about SSRF bypasses, redirect/DNS rebinding, response-budget bypasses, authentication mistakes, secret disclosure, unsafe XML/HTML handling and dependency vulnerabilities are especially useful. General SEO disagreements or target-site availability problems should use normal issues.
+
+See [the security model](docs/SECURITY.md) for architecture, residual risks and deployment guidance.

@@ -1,5 +1,5 @@
 name: "📝 Documentation update"
-description: "Propose changes to README, Wiki, or RapidAPI docs"
+description: "Propose changes to README, API, methodology, strategy, or security docs"
 title: "[Docs]: <short summary>"
 labels: ["documentation"]
 assignees: []
@@ -14,13 +14,11 @@ body:
       label: Documentation area
       options:
         - README
-        - Wiki (Home)
-        - Wiki (Getting Started)
-        - Wiki (Endpoints)
-        - Wiki (Examples)
-        - Wiki (FAQ)
-        - Wiki (Changelog)
-        - RapidAPI docs
+        - API guide
+        - Scoring methodology
+        - SaaS SEO playbook
+        - Security model
+        - Changelog
         - Other
     validations:
       required: true

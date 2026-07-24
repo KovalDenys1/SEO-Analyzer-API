@@ -1,5 +1,5 @@
 name: "🐞 Bug report"
-description: "Report a reproducible problem in Ultimate SEO Analyzer API"
+description: "Report a reproducible problem in SaaS SEO Analyzer API"
 title: "[Bug]: <short summary>"
 labels: ["bug"]
 assignees: []
@@ -13,6 +13,10 @@ body:
     attributes:
       label: Affected endpoint
       options:
+        - /v1/analyze
+        - /v1/site-audit
+        - /v1/compare
+        - /v1/opportunities
         - /analyze
         - /quick-score
         - /metadata
@@ -23,7 +27,7 @@ body:
     id: target_url
     attributes:
       label: URL being analyzed (if applicable)
-      description: Provide a real URL you tested with
+      description: Provide a public URL only if it contains no private or sensitive data
       placeholder: "https://example.com"
   - type: dropdown
     id: client
@@ -32,7 +36,7 @@ body:
       options:
         - cURL
         - Postman
-        - RapidAPI Playground
+        - OpenAPI /docs
         - Node.js (fetch/axios)
         - Python (requests/httpx)
         - Other
@@ -42,7 +46,7 @@ body:
       label: Steps to reproduce
       description: Include precise steps and a request snippet if possible.
       placeholder: |
-        1. Call POST /analyze with body: {...}
+        1. Call GET /v1/analyze?url=...
         2. Observe response 500
         3. ...
       render: bash

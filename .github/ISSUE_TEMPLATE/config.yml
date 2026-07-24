@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: "💬 Ask a question / General discussion"
-    url: "https://github.com/KovalDenys1/SEO-Analyzer-API/discussions/categories/general"
+    url: "https://github.com/hlibsuslov/SEO-Analyzer-API/discussions"
     about: "Use Discussions for Q&A, troubleshooting, and open ideas."
   - name: "👋 Welcome / Introductions"
-    url: "https://github.com/KovalDenys1/SEO-Analyzer-API/discussions/categories/welcome"
+    url: "https://github.com/hlibsuslov/SEO-Analyzer-API/discussions"
     about: "Say hi and share how you plan to use the API."
   - name: "🔐 Security vulnerability"
-    url: "https://github.com/KovalDenys1/SEO-Analyzer-API/security/policy"
+    url: "https://github.com/hlibsuslov/SEO-Analyzer-API/security/policy"
     about: "Please report security issues via our Security Policy, not public issues."

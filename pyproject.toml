@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "saas-seo-analyzer"
+version = "2.0.0"
+description = "Security-first SEO and growth-strategy analyzer for SaaS websites"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "hlibsuslov", email = "glebsuslov720@gmail.com" }]
+keywords = ["seo", "saas", "fastapi", "crawler", "technical-seo"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Framework :: FastAPI",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+]
+dependencies = [
+  "beautifulsoup4>=4.14.3,<5",
+  "defusedxml>=0.7.1,<1",
+  "fastapi>=0.139.2,<1",
+  "httpx>=0.28.1,<1",
+  "prometheus-client>=0.25,<1",
+  "pydantic-settings>=2.14.2,<3",
+  "uvicorn>=0.51,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.5,<2",
+  "httpx2>=2.7,<3",
+  "mypy>=2.3,<3",
+  "pip-audit>=2.10.1,<3",
+  "pytest>=9.1.1,<10",
+  "pytest-asyncio>=1.4,<2",
+  "pytest-cov>=7,<8",
+  "ruff>=0.15.22,<1",
+]
+
+[project.urls]
+Repository = "https://github.com/hlibsuslov/SEO-Analyzer-API"
+Issues = "https://github.com/hlibsuslov/SEO-Analyzer-API/issues"
+
+[tool.setuptools.packages.find]
+include = ["seo_analyzer*"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["seo_analyzer"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 85
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["B", "C4", "E", "F", "I", "N", "PERF", "RUF", "S", "SIM", "UP"]
+ignore = [
+  "B008",  # FastAPI dependency declarations intentionally call Depends/Query.
+  "E501",  # The formatter cannot wrap long diagnostic strings without changing payloads.
+  "RUF001",  # Cyrillic SEO dictionaries intentionally contain confusable Unicode characters.
+  "S101",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true

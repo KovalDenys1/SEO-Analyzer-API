@@ -1,5 +1,5 @@
 name: "✨ Feature request"
-description: "Suggest an idea or improvement for Ultimate SEO Analyzer API"
+description: "Suggest an improvement for SaaS SEO Analyzer API"
 title: "[Feature]: <short summary>"
 labels: ["enhancement"]
 assignees: []
@@ -22,9 +22,9 @@ body:
       label: Proposed solution
       description: Describe your solution. Include endpoint shape, parameters, and response fields if applicable.
       placeholder: |
-        New endpoint: /quick-score
-        Params: url, includeSuggestions=true
-        Response: { score: 92, ... }
+        New endpoint: /v1/example
+        Input: { ... }
+        Response: { "schema_version": "2.0", ... }
       render: JSON
     validations:
       required: true

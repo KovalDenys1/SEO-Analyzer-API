@@ -1,68 +1,44 @@
-# Contributing to Ultimate SEO Analyzer API
+# Contributing
 
-🎉 First off, thanks for taking the time to contribute! 🎉
+Contributions should keep the API explainable, safe for caller-controlled public URLs, and honest about what static evidence can establish.
 
-The following is a set of guidelines for contributing to this project. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes.
+## Development setup
 
----
+Python 3.11 or newer is required.
 
-## How Can I Contribute?
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -e '.[dev]'
+```
 
-### 🐞 Reporting Bugs
-- Use the **Issues** tab on GitHub.
-- Include as many details as possible (URL, steps to reproduce, expected vs. actual behavior).
-- Attach screenshots or logs if relevant.
+Run the complete local gate before opening a pull request:
 
-### 💡 Suggesting Enhancements
-- Open a new **Discussion (General)** or **Issue**.
-- Clearly describe the enhancement and why it would be useful.
-- If possible, propose an API design or example response.
+```bash
+ruff check .
+ruff format --check .
+mypy seo_analyzer
+pytest --cov --cov-report=term-missing
+pip-audit
+python -m build
+```
 
-### 🔧 Submitting Pull Requests
-1. Fork the repository.  
-2. Create a new branch:  
-   ```bash
-   git checkout -b feature/my-new-feature
-   ```
-3. Make your changes and ensure the code is clean.  
-4. Test your changes (locally or via the deployed API).  
-5. Commit with a clear message:  
-   ```bash
-   git commit -m "Add feature: XYZ"
-   ```
-6. Push to your fork and open a Pull Request.  
+`make check` runs lint, formatting, types and tests. The CI matrix validates Python 3.11 and 3.13, package installation and the container build.
 
-### 📐 Code Style
-- Follow Python **PEP8** guidelines.  
-- Keep functions small and readable.  
-- Add docstrings where needed.  
-- Use **black** or **flake8** for formatting/linting (recommended).  
+## Change expectations
 
-### 📚 Documentation
-- If you add/change an endpoint, update the **Wiki** and **README** if needed.  
-- Example responses should be updated in **RapidAPI** docs.  
+- Add tests for fixes and new behavior, including failure and budget boundaries.
+- Preserve SSRF validation for every request and redirect. New network providers need an explicit threat model.
+- Keep evidence arrays and external work bounded.
+- Give new findings a stable issue code, category, severity, evidence, remediation, confidence and appropriate tests.
+- Do not mix conversion heuristics into core SEO weights.
+- Avoid claims about rankings, traffic, rich-result eligibility or Core Web Vitals without the necessary source data.
+- Update OpenAPI-facing models, README, methodology and changelog when contracts or scoring change.
+- Increment `methodology_version` when a scoring change alters historical comparability.
+- Preserve legacy routes unless the change includes a documented major-version migration.
 
----
+## Pull requests
 
-## 🚀 Getting Started for Development
-1. Clone the repository:  
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/seo-analyzer-api.git
-   cd seo-analyzer-api
-   ```
-2. Install dependencies:  
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run locally:  
-   ```bash
-   uvicorn main:app --reload
-   ```
+Create a focused branch, explain the user-visible result and risk, and include the checks you ran. Link relevant official specifications or search-engine documentation for policy-sensitive behavior. Never commit `.env`, API keys, target-site data or other secrets.
 
----
-
-## 📝 Additional Notes
-- Be respectful and follow our [Code of Conduct](./CODE_OF_CONDUCT.md).  
-- All contributions (code, issues, comments) are welcome!  
-
-Thank you for contributing ❤️
+Security vulnerabilities should follow [SECURITY.md](SECURITY.md), not a public issue. All contributors must follow the [Code of Conduct](CODE_OF_CONDUCT.md).

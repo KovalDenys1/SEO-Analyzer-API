@@ -13,6 +13,10 @@ body:
     attributes:
       label: Endpoint
       options:
+        - /v1/analyze
+        - /v1/site-audit
+        - /v1/compare
+        - /v1/opportunities
         - /analyze
         - /quick-score
         - /metadata
@@ -49,6 +53,11 @@ body:
     id: impact
     attributes:
       label: Impact & migration (if breaking)
+  - type: textarea
+    id: methodology
+    attributes:
+      label: Scoring or methodology impact
+      description: Explain whether historical scores or schema consumers would change.
   - type: textarea
     id: extra
     attributes:

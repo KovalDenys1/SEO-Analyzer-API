@@ -534,7 +534,7 @@ def detect_issues(parsed: ParsedPage, requested_url: str, final_url: str) -> lis
         issues.append(
             _issue(
                 "social.open_graph_incomplete",
-                "social",
+                "media_social",
                 Severity.LOW,
                 "Open Graph preview is incomplete",
                 "Commercial SaaS pages are frequently shared in chat and social channels; incomplete metadata reduces preview control.",

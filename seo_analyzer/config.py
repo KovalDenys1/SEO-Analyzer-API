@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     max_concurrent_fetches: int = Field(default=8, ge=1, le=50)
     allow_private_hosts: bool = False
     allowed_ports: str = "80,443"
-    user_agent: str = "SaaSSEOAnalyzer/2.0 (+https://github.com/hlibsuslov/SEO-Analyzer-API)"
+    user_agent: str = "SaaSSEOAnalyzer/2.0 (+https://github.com/KovalDenys1/SEO-Analyzer-API)"
     robots_user_agent: str = "SaaSSEOAnalyzer"
 
     cache_ttl_seconds: int = Field(default=300, ge=0, le=86_400)

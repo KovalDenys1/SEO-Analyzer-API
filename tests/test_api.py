@@ -71,6 +71,8 @@ def test_operations_analysis_and_legacy_endpoints() -> None:
             assert quick.json()["seo_grade"] == "A"
             metadata = client.get("/metadata", params={"url": "https://saas.test"})
             assert metadata.json()["meta"]["canonical"] == "https://saas.test/"
+            assert metadata.json()["headings"]["h1"]["count"] >= 1
+            assert isinstance(metadata.json()["headings"]["h1"]["texts"], list)
     finally:
         close_analyzer(analyzer)
 

@@ -368,6 +368,8 @@ def create_app(settings: Settings | None = None, analyzer: Analyzer | None = Non
         current: Analyzer = Depends(get_analyzer),
     ) -> dict[str, Any]:
         report = await current.analyze(url)
+        h1 = [item["text"] for item in report.headings["items"] if item["level"] == 1]
+        h2 = [item["text"] for item in report.headings["items"] if item["level"] == 2]
         return {
             "url": report.final_url,
             "title": report.metadata["title"],
@@ -377,7 +379,10 @@ def create_app(settings: Settings | None = None, analyzer: Analyzer | None = Non
                 "canonical": report.metadata["canonical"],
                 "robots": report.indexability["robots_meta"],
             },
-            "headings": report.headings,
+            "headings": {
+                "h1": {"count": len(h1), "texts": h1},
+                "h2": {"count": len(h2), "texts": h2},
+            },
             "social": report.social,
         }
 

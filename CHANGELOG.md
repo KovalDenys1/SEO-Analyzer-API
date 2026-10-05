@@ -7,6 +7,7 @@ All notable changes to this fork are documented here.
 ### Added
 
 - `SEO_API_KEYS`: a comma-separated list of additional `X-API-Key` values, accepted alongside `SEO_API_KEY`, so each consumer can hold and rotate its own key.
+- Apify Actor in `apify-actor/`: runs the analyzer in-process and returns page, quick-score and site audits as dataset items, charged per page.
 
 ### Fixed
 

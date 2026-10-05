@@ -1,0 +1,27 @@
+{
+    "$schema": "https://apify.com/schemas/v1/dataset.ide.json",
+    "actorSpecification": 1,
+    "fields": {},
+    "views": {
+        "overview": {
+            "title": "Overview",
+            "transformation": {
+                "fields": ["type", "url", "title", "status_code", "seo_score", "seo_grade", "saas_score", "issue_count", "pages_audited"]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "type": { "label": "Item", "format": "text" },
+                    "url": { "label": "URL", "format": "link" },
+                    "title": { "label": "Title", "format": "text" },
+                    "status_code": { "label": "HTTP status", "format": "number" },
+                    "seo_score": { "label": "SEO score", "format": "number" },
+                    "seo_grade": { "label": "Grade", "format": "text" },
+                    "saas_score": { "label": "SaaS readiness", "format": "number" },
+                    "issue_count": { "label": "Issues", "format": "number" },
+                    "pages_audited": { "label": "Pages audited", "format": "number" }
+                }
+            }
+        }
+    }
+}

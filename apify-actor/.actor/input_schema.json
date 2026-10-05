@@ -1,0 +1,65 @@
+{
+    "title": "SaaS SEO Analyzer input",
+    "description": "Give one or more public URLs and pick how deep to go. Bare domains get https:// added.",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "urls": {
+            "title": "URLs",
+            "type": "array",
+            "description": "Pages to audit, or the start pages of the sites to crawl in Site audit mode. Up to 1,000 per run.",
+            "editor": "stringList",
+            "prefill": ["https://example.com"],
+            "minItems": 1,
+            "maxItems": 1000,
+            "uniqueItems": true
+        },
+        "mode": {
+            "title": "Mode",
+            "type": "string",
+            "description": "Page audit returns the full report for each URL. Quick score returns score, grade, warnings and the top five fixes only, at a lower price. Site audit crawls a bounded sample of each site and adds cross-page findings.",
+            "editor": "select",
+            "enum": ["page", "quick", "site"],
+            "enumTitles": ["Page audit – full report per URL", "Quick score – score and top fixes per URL", "Site audit – bounded crawl of each site"],
+            "default": "page"
+        },
+        "maxPages": {
+            "title": "Max pages per site",
+            "type": "integer",
+            "description": "Site audit only. Upper limit of pages fetched and charged per start URL.",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 25,
+            "unit": "pages",
+            "sectionCaption": "Site audit options",
+            "sectionDescription": "These settings are ignored in Page audit and Quick score modes."
+        },
+        "maxDepth": {
+            "title": "Max link depth",
+            "type": "integer",
+            "description": "How many clicks away from the start URL the crawl may go. Pages listed in the sitemap are sampled regardless of depth.",
+            "minimum": 0,
+            "maximum": 8,
+            "default": 3
+        },
+        "useSitemap": {
+            "title": "Read XML sitemaps",
+            "type": "boolean",
+            "description": "Use robots.txt and sitemap.xml to find pages and to report orphan candidates.",
+            "default": true
+        },
+        "respectRobots": {
+            "title": "Respect robots.txt",
+            "type": "boolean",
+            "description": "Skip pages that robots.txt disallows for the SaaSSEOAnalyzer user agent. Turn off only for sites you own.",
+            "default": true
+        },
+        "includeSubdomains": {
+            "title": "Include subdomains",
+            "type": "boolean",
+            "description": "Treat subdomains such as docs.example.com as part of the same site.",
+            "default": false
+        }
+    },
+    "required": ["urls"]
+}

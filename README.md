@@ -110,6 +110,18 @@ All settings use the `SEO_` prefix. See [`.env.example`](.env.example) for the c
 | `SEO_PAGESPEED_API_KEY` | empty | Optional Google API key |
 | `SEO_CORS_ORIGINS` | empty | Comma-separated browser origins |
 
+## Apify Actor
+
+`apify-actor/` packages the same analyzer as an [Apify](https://apify.com) Actor. It imports `seo_analyzer` directly, pinned to a commit of this repository in `apify-actor/requirements.txt`, so it needs neither the hosted API nor an API key. See [apify-actor/README.md](apify-actor/README.md) for input, output and pricing.
+
+```bash
+cd apify-actor
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt pytest pytest-asyncio
+python -m pytest tests
+npx apify-cli run --input '{"urls":["https://example.com"]}'
+```
+
 ## Scores are diagnostics, not promises
 
 The core score is a weighted, fully explainable health summary. Every deduction maps to an issue code and evidence. The SaaS score is a separate page-type-aware acquisition/conversion heuristic. Site strategy maturity measures detected coverage in the bounded sample.

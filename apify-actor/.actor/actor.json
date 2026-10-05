@@ -1,0 +1,19 @@
+{
+    "$schema": "https://apify.com/schemas/v1/actor.ide.json",
+    "actorSpecification": 1,
+    "name": "saas-seo-analyzer",
+    "title": "SaaS SEO Analyzer – Site Audit, Page Scores & Ranked Fixes",
+    "description": "Audit a page or crawl a site sample: 0–100 SEO score, every issue with the evidence that triggered it, fixes ranked by impact and effort, and a separate SaaS conversion-readiness score. JSON out, no browser, pay per page.",
+    "version": "0.1",
+    "buildTag": "latest",
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 2048,
+    "defaultMemoryMbytes": 512,
+    "dockerfile": "../Dockerfile",
+    "readme": "../README.md",
+    "input": "./input_schema.json",
+    "output": "./output_schema.json",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}

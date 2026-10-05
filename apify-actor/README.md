@@ -1,4 +1,4 @@
-# SaaS SEO Analyzer – Site Audit, Page Scores & Ranked Fixes
+# SEO Audit with Evidence, Ranked Fixes & SaaS Score
 
 Give it a URL and get an explainable technical SEO audit as JSON. Every point taken off the score maps to an issue code with the evidence that triggered it, and every issue comes with a ranked fix: what to change, why, expected impact, effort, confidence and how to check that the fix worked.
 

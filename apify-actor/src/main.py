@@ -14,6 +14,8 @@ class ApifySink:
 
     async def push(self, items: list[dict[str, Any]], event: str | None) -> None:
         await Actor.push_data(items, event)
+        for item in items:
+            Actor.log.info(f"{item['type']}: {item['url']}")
 
 
 def status_message(summary: RunSummary) -> str:

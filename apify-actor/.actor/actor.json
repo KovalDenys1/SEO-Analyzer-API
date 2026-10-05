@@ -2,7 +2,7 @@
     "$schema": "https://apify.com/schemas/v1/actor.ide.json",
     "actorSpecification": 1,
     "name": "saas-seo-analyzer",
-    "title": "SaaS SEO Analyzer – Site Audit, Page Scores & Ranked Fixes",
+    "title": "SEO Audit with Evidence, Ranked Fixes & SaaS Score",
     "description": "Audit a page or crawl a site sample: 0–100 SEO score, every issue with the evidence that triggered it, fixes ranked by impact and effort, and a separate SaaS conversion-readiness score. JSON out, no browser, pay per page.",
     "version": "0.1",
     "buildTag": "latest",

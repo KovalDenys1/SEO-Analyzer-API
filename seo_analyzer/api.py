@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import hmac
 import logging
 import re
@@ -196,14 +197,16 @@ def create_app(settings: Settings | None = None, analyzer: Analyzer | None = Non
             },
         )
 
+    accepted_key_digests = tuple(_key_digest(key) for key in runtime_settings.accepted_api_keys)
+
     async def require_api_key(
         x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     ) -> None:
-        expected = runtime_settings.api_key
-        if expected is None or not expected.get_secret_value():
+        if not accepted_key_digests:
             return
-        supplied = x_api_key or ""
-        if not hmac.compare_digest(supplied, expected.get_secret_value()):
+        supplied = _key_digest(x_api_key or "")
+        matches = [hmac.compare_digest(supplied, accepted) for accepted in accepted_key_digests]
+        if not any(matches):
             raise FetchError("unauthorized", "A valid X-API-Key is required", status_code=401)
 
     def get_analyzer(request: Request) -> Analyzer:
@@ -387,6 +390,11 @@ def create_app(settings: Settings | None = None, analyzer: Analyzer | None = Non
         }
 
     return app
+
+
+def _key_digest(value: str) -> bytes:
+    # hmac.compare_digest raises on non-ASCII str and returns early on unequal lengths.
+    return hashlib.sha256(value.encode("utf-8")).digest()
 
 
 def _legacy_payload(report: Any) -> dict[str, Any]:

@@ -9,7 +9,7 @@ The API returns diagnostic evidence, not a promise of rankings. The stable v2 su
 - Scores use a `0–100` scale and include a letter grade.
 - Every response carries `X-Request-ID`. Supply the same header to correlate client and server logs.
 - Analysis responses use `Cache-Control: no-store`.
-- When `SEO_API_KEY` is configured, send it as `X-API-Key` to analysis and strategy endpoints.
+- When `SEO_API_KEY` or `SEO_API_KEYS` is configured, send one of the keys as `X-API-Key` to analysis and strategy endpoints.
 - Request bodies are limited to 1 MB. A reverse proxy should enforce the same or a smaller limit.
 
 ## Errors

@@ -80,7 +80,7 @@ curl http://127.0.0.1:8000/v1/site-audit \
   }'
 ```
 
-If `SEO_API_KEY` is set, add `-H 'X-API-Key: …'` to protected endpoints.
+If `SEO_API_KEY` or `SEO_API_KEYS` is set, add `-H 'X-API-Key: …'` to protected endpoints.
 
 ## Docker
 
@@ -98,6 +98,7 @@ All settings use the `SEO_` prefix. See [`.env.example`](.env.example) for the c
 | Variable | Default | Meaning |
 |---|---:|---|
 | `SEO_API_KEY` | empty | Optional `X-API-Key` shared secret |
+| `SEO_API_KEYS` | empty | Optional comma-separated list of further accepted keys, one per consumer |
 | `SEO_FETCH_TIMEOUT_SECONDS` | `12` | Upstream request timeout |
 | `SEO_MAX_RESPONSE_BYTES` | `3000000` | Maximum decompressed page/resource body |
 | `SEO_MAX_REDIRECTS` | `5` | Redirect budget |

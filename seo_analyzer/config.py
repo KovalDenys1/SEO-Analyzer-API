@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     )
 
     api_key: SecretStr | None = None
+    api_keys: SecretStr | None = None
     fetch_timeout_seconds: float = Field(default=12.0, ge=1, le=120)
     max_response_bytes: int = Field(default=3_000_000, ge=50_000, le=20_000_000)
     max_redirects: int = Field(default=5, ge=0, le=10)
@@ -74,6 +75,13 @@ class Settings(BaseSettings):
         if normalized not in {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}:
             raise ValueError("log_level must be CRITICAL, ERROR, WARNING, INFO, or DEBUG")
         return normalized
+
+    @property
+    def accepted_api_keys(self) -> tuple[str, ...]:
+        raw = [self.api_key.get_secret_value()] if self.api_key else []
+        if self.api_keys:
+            raw.extend(self.api_keys.get_secret_value().split(","))
+        return tuple(dict.fromkeys(key.strip() for key in raw if key.strip()))
 
     @property
     def parsed_allowed_ports(self) -> set[int]:

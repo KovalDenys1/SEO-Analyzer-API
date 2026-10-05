@@ -80,6 +80,19 @@ def test_settings_parse_lists_and_validate() -> None:
         Settings(log_level="verbose")
 
 
+def test_api_keys_merge_both_variables_without_blanks_or_duplicates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("SEO_API_KEY", raising=False)
+    monkeypatch.delenv("SEO_API_KEYS", raising=False)
+    assert Settings().accepted_api_keys == ()
+
+    monkeypatch.setenv("SEO_API_KEY", "primary")
+    monkeypatch.setenv("SEO_API_KEYS", " channel-a, ,channel-b,primary,channel-a ")
+    assert Settings().accepted_api_keys == ("primary", "channel-a", "channel-b")
+    assert "channel-a" not in repr(Settings())
+
+
 @pytest.mark.asyncio
 async def test_ttl_cache_get_evict_expire_and_clear() -> None:
     cache: AsyncTTLCache[str, dict[str, int]] = AsyncTTLCache(maxsize=2, ttl_seconds=0.02)

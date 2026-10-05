@@ -2,6 +2,16 @@
 
 All notable changes to this fork are documented here.
 
+## 2.1.0 – 2026-10-05
+
+### Added
+
+- `SEO_API_KEYS`: a comma-separated list of additional `X-API-Key` values, accepted alongside `SEO_API_KEY`, so each consumer can hold and rotate its own key.
+
+### Fixed
+
+- An `X-API-Key` header with non-ASCII characters returned 500; it now returns 401.
+
 ## 2.0.0 — 2026-07-22
 
 ### Added

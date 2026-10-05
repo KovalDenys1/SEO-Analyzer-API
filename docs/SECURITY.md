@@ -32,7 +32,7 @@ Robots compliance is a crawler policy, not an access-control mechanism. Site own
 
 ## API boundary
 
-Set `SEO_API_KEY` for direct exposure and compare it through the `X-API-Key` header. The comparison is constant-time. In production, also use an authenticated reverse proxy or API gateway for per-client keys, rate limits, TLS, request-body limits and abuse controls.
+Set `SEO_API_KEY` for direct exposure and compare it through the `X-API-Key` header. `SEO_API_KEYS` adds a comma-separated list of further keys so each consumer can be rotated on its own. The comparison is constant-time and checks every configured key. In production, also use an authenticated reverse proxy or API gateway for per-client keys, rate limits, TLS, request-body limits and abuse controls.
 
 The built-in key is a single shared secret, not a tenant/authorization system. `/healthz`, `/readyz`, `/metrics`, API docs and the root route remain operational endpoints. Restrict them at the proxy if your environment requires it.
 
@@ -65,7 +65,7 @@ Container restrictions do not replace outbound firewall rules. For higher-risk d
 ## Deployment checklist
 
 1. Keep `SEO_ALLOW_PRIVATE_HOSTS=false`.
-2. Set a strong `SEO_API_KEY` or enforce stronger gateway authentication.
+2. Set a strong `SEO_API_KEY` (and one `SEO_API_KEYS` entry per further consumer) or enforce stronger gateway authentication.
 3. Terminate TLS and apply per-client rate/body/time limits at the proxy.
 4. Keep the Compose port on loopback or an internal network.
 5. Apply egress filtering and isolate the runtime from cloud/server metadata networks.

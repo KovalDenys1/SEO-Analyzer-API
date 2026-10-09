@@ -1,2 +1,2 @@
-apify>=3.0,<4
+apify>=4.0.2,<5
 saas-seo-analyzer @ https://github.com/KovalDenys1/SEO-Analyzer-API/archive/e2b46dad063287a4684a7d84806b4e34fdee2d70.tar.gz

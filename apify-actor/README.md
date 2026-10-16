@@ -4,6 +4,8 @@ Give it a URL and get an explainable technical SEO audit as JSON. Every point ta
 
 It fetches plain HTML over HTTP. No browser, no proxy, no third-party SEO database, so a page takes about a second and costs cents.
 
+Want to see a report first? Audit one page free in the browser, no account needed, at [SEO Audit Lab](https://seo-analyzer-web-ebon.vercel.app).
+
 ## What you get
 
 - **Two separate scores, 0–100 with a letter grade.** Core SEO health across eight weighted categories, and SaaS acquisition and conversion readiness (value proposition, call to action, trust, product evidence).

@@ -199,7 +199,27 @@ def _types_for_value(value: Any) -> set[str]:
     return found
 
 
+APP_MOUNT_IDS = re.compile(r"^(root|app|__next|__nuxt|___gatsby|svelte|q-app)$")
+
+
+def _client_render_hints(soup: BeautifulSoup) -> list[str]:
+    hints: list[str] = []
+    body = soup.body
+    if body is not None:
+        mount = body.find(id=APP_MOUNT_IDS)
+        if isinstance(mount, Tag) and not mount.get_text(strip=True):
+            hints.append(f"empty #{mount.get('id')} mount element")
+    if soup.find("script", attrs={"type": "module"}):
+        hints.append("module script")
+    for noscript in soup.find_all("noscript"):
+        if "javascript" in noscript.get_text(" ", strip=True).lower():
+            hints.append("noscript asks for JavaScript")
+            break
+    return hints
+
+
 def _extract_content(soup: BeautifulSoup) -> tuple[dict[str, Any], str, str]:
+    client_render_hints = _client_render_hints(soup)
     content_soup = BeautifulSoup(str(soup), "html.parser")
     for tag in content_soup.find_all(
         ["script", "style", "noscript", "svg", "template", "canvas", "iframe"]
@@ -239,6 +259,7 @@ def _extract_content(soup: BeautifulSoup) -> tuple[dict[str, Any], str, str]:
             "average_sentence_words": round(len(words) / len(sentences), 1) if sentences else 0,
             "top_terms": top_terms,
             "text_to_html_ratio_percent": 0,  # populated by parse_page once byte size is known
+            "client_render_hints": client_render_hints,
             "author": _first_meta(soup, "name", "author"),
             "published_time": _first_meta(soup, "property", "article:published_time"),
             "modified_time": _first_meta(soup, "property", "article:modified_time"),

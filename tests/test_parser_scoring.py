@@ -284,3 +284,37 @@ def test_fetch_result_text_falls_back_for_unknown_encoding() -> None:
     assert result.text == "Привет"
     result.redirects = [RedirectHop("https://a", 301, "https://b")]
     assert result.redirects[0].status_code == 301
+
+
+VITE_SHELL_HTML = b"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Acme - Migrate accounts without losing customers</title>
+<meta name="description" content="Move your account to a new country and keep every customer." />
+<script type="module" crossorigin src="/assets/index-abc123.js"></script>
+</head><body><div id="root"></div></body></html>"""
+
+TINY_STATIC_HTML = b"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />
+<title>Example Domain</title></head><body><div><h1>Example Domain</h1>
+<p>This domain is for use in illustrative examples in documents.</p></div></body></html>"""
+
+
+def test_small_client_rendered_shell_is_flagged_as_javascript_shell() -> None:
+    parsed = parse_page(make_result(VITE_SHELL_HTML))
+    assert parsed.sections["content"]["client_render_hints"] == [
+        "empty #root mount element",
+        "module script",
+    ]
+    issues = detect_issues(parsed, "https://saas.test/", "https://saas.test/")
+    shell = next(issue for issue in issues if issue.code == "content.javascript_shell")
+    assert shell.evidence["html_bytes"] < 10_000
+    assert "content.possibly_thin" not in {issue.code for issue in issues}
+
+
+def test_tiny_static_page_is_thin_not_a_javascript_shell() -> None:
+    parsed = parse_page(make_result(TINY_STATIC_HTML))
+    assert parsed.sections["content"]["client_render_hints"] == []
+    codes = {
+        issue.code for issue in detect_issues(parsed, "https://saas.test/", "https://saas.test/")
+    }
+    assert "content.javascript_shell" not in codes
+    assert "content.possibly_thin" in codes

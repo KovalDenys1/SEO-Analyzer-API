@@ -70,7 +70,7 @@ The response is divided into stable top-level sections:
 | `score`, `issues`, `recommendations` | Explainable scoring, evidence, remediation and validation steps |
 | `limitations` | What the static analysis could not establish |
 
-The analyzer does not execute JavaScript. A rendered client-side shell can therefore be reported as thin even when a browser later paints content; this is useful as a rendering-risk signal, not proof of failed indexing.
+The analyzer does not execute JavaScript. A page with fewer than 30 readable words is reported as `content.javascript_shell` when its HTML is over 10 KB or `content.client_render_hints` lists a client-rendering signal (an empty app mount element, a module script, a `<noscript>` asking for JavaScript), and as thin content otherwise. Either is a rendering-risk signal, not proof of failed indexing.
 
 ## `POST /v1/site-audit`
 

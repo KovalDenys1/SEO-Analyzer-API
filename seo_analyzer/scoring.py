@@ -393,7 +393,8 @@ def detect_issues(parsed: ParsedPage, requested_url: str, final_url: str) -> lis
         PageType.CASE_STUDY: 250,
         PageType.HOME: 120,
     }.get(page_type, 80)
-    if word_count < 30 and fetch["content_bytes"] > 10_000:
+    render_hints = content.get("client_render_hints") or []
+    if word_count < 30 and (fetch["content_bytes"] > 10_000 or render_hints):
         issues.append(
             _issue(
                 "content.javascript_shell",
@@ -402,7 +403,11 @@ def detect_issues(parsed: ParsedPage, requested_url: str, final_url: str) -> lis
                 "Initial HTML contains very little readable content",
                 "The page may depend on client-side rendering. Google can render JavaScript, but rendering is delayed and many other crawlers cannot.",
                 "Server-render or pre-render critical headings, copy, links, and structured data; verify rendered HTML separately.",
-                evidence={"word_count": word_count, "html_bytes": fetch["content_bytes"]},
+                evidence={
+                    "word_count": word_count,
+                    "html_bytes": fetch["content_bytes"],
+                    "client_render_hints": render_hints,
+                },
                 penalty=45,
                 impact=Impact.HIGH,
                 effort=Effort.HIGH,

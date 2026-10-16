@@ -2,6 +2,12 @@
 
 All notable changes to this fork are documented here.
 
+## Unreleased
+
+### Fixed
+
+- Client-rendered pages with a small HTML shell, such as a Vite or Create React App `index.html` with an empty `#root`, were reported as thin content with a missing H1 and no internal links, but not as a JavaScript shell, because the shell check required more than 10 KB of HTML. The check now also fires on an empty app mount element, a module script or a `<noscript>` asking for JavaScript, and lists the signals it found in `content.client_render_hints` and the issue evidence.
+
 ## 2.1.0 – 2026-10-05
 
 ### Added

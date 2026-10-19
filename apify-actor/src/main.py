@@ -13,7 +13,7 @@ class ApifySink:
         return Actor.get_charging_manager().calculate_max_event_charge_count_within_limit(event)
 
     async def push(self, items: list[dict[str, Any]], event: str | None) -> None:
-        await Actor.push_data(items, event)
+        await Actor.push_data(items, charged_event_name=event)
         for item in items:
             Actor.log.info(f"{item['type']}: {item['url']}")
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=Check origin/main for a new SEO Analyzer API commit every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

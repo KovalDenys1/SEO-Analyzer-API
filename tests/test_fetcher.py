@@ -1,10 +1,11 @@
+import asyncio
 import ipaddress
 
 import httpx
 import pytest
 from conftest import PUBLIC_IP, make_fetcher, make_settings
 
-from seo_analyzer.fetcher import FetchError, SafeFetcher
+from seo_analyzer.fetcher import FetchError, IPAddress, SafeFetcher
 
 
 @pytest.mark.asyncio
@@ -194,3 +195,37 @@ async def test_network_failure_and_empty_dns_are_normalized() -> None:
 @pytest.mark.asyncio
 async def test_static_resolver_handles_literal_ip() -> None:
     assert await SafeFetcher._resolve(PUBLIC_IP, 443) == [ipaddress.ip_address(PUBLIC_IP)]
+
+
+@pytest.mark.asyncio
+async def test_hosts_sharing_a_pinned_ip_do_not_share_a_connection() -> None:
+    connections = 0
+
+    async def serve(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        nonlocal connections
+        connections += 1
+        body = b"<html><title>OK</title></html>"
+        while await reader.readuntil(b"\r\n\r\n"):
+            writer.write(
+                b"HTTP/1.1 200 OK\r\ncontent-type: text/html\r\n"
+                b"content-length: %d\r\n\r\n%s" % (len(body), body)
+            )
+            await writer.drain()
+
+    server = await asyncio.start_server(serve, "127.0.0.1", 0)
+    port = server.sockets[0].getsockname()[1]
+
+    async def resolver(host: str, port: int) -> list[IPAddress]:
+        return [ipaddress.ip_address("127.0.0.1")]
+
+    fetcher = SafeFetcher(
+        make_settings(allow_private_hosts=True, allowed_ports=str(port)), resolver=resolver
+    )
+    try:
+        for host in ("first.test", "second.test"):
+            result = await fetcher.fetch(f"http://{host}:{port}/")
+            assert result.status_code == 200
+    finally:
+        await fetcher.close()
+        server.close()
+    assert connections == 2

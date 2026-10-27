@@ -71,9 +71,10 @@ class SafeFetcher:
         self._resolver = resolver or self._resolve
         self._semaphore = asyncio.Semaphore(settings.max_concurrent_fetches)
         timeout = httpx.Timeout(settings.fetch_timeout_seconds)
+        # The pool is keyed by the pinned IP, so a kept connection would carry another host's SNI.
         limits = httpx.Limits(
             max_connections=settings.max_concurrent_fetches,
-            max_keepalive_connections=settings.max_concurrent_fetches,
+            max_keepalive_connections=0,
         )
         self._client = httpx.AsyncClient(
             timeout=timeout,

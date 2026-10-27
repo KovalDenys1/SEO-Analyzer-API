@@ -1,0 +1,22 @@
+#cloud-config
+# Ubuntu 24.04 aarch64 on an OCI Always Free Ampere A1 VM.
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - git
+  - debian-keyring
+  - debian-archive-keyring
+  - apt-transport-https
+  - curl
+runcmd:
+  # OCI's Ubuntu images ship an iptables REJECT rule ahead of everything but SSH.
+  - iptables -I INPUT 5 -p tcp --dport 80 -m state --state NEW -j ACCEPT
+  - iptables -I INPUT 5 -p tcp --dport 443 -m state --state NEW -j ACCEPT
+  - netfilter-persistent save
+  - curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/gpg.key | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  - curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt -o /etc/apt/sources.list.d/caddy-stable.list
+  - apt-get update && apt-get install -y caddy
+  - usermod -aG docker ubuntu
+  - git clone https://github.com/KovalDenys1/SEO-Analyzer-API.git /opt/seo-api
+  - chown -R ubuntu:ubuntu /opt/seo-api

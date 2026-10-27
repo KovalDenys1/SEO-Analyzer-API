@@ -6,4 +6,4 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 User=ubuntu
-ExecStart=/opt/seo-api/deploy/oracle/seo-api-deploy.sh
+ExecStart=/usr/local/bin/seo-api-deploy

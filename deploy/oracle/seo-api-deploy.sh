@@ -1,5 +1,5 @@
 #!/bin/sh
-# Rebuilds the container when origin/main has moved; run by seo-api-deploy.timer.
+# Rebuilds the container when origin/main has moved; installed as /usr/local/bin/seo-api-deploy, run by seo-api-deploy.timer.
 set -eu
 cd /opt/seo-api
 git fetch -q origin main

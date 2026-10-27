@@ -1,4 +1,9 @@
 {$SEO_API_HOST} {
 	encode gzip
-	reverse_proxy 127.0.0.1:8000
+	handle_path /rest/v1/* {
+		reverse_proxy 127.0.0.1:3001
+	}
+	handle {
+		reverse_proxy 127.0.0.1:8000
+	}
 }

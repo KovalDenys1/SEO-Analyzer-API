@@ -43,3 +43,13 @@ create or replace view usage_today as
   from usage_logs
   where created_at >= current_date
   group by user_id;
+
+-- Free audits from the landing page (no IP, no full URL)
+create table if not exists try_audits (
+  id          bigserial primary key,
+  host        text not null,
+  status      int not null,
+  score       real,
+  duration_ms int,
+  created_at  timestamptz not null default now()
+);

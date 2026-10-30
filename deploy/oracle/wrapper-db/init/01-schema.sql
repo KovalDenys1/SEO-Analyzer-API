@@ -1,7 +1,7 @@
 -- Users (synced from Clerk via webhook)
 create table if not exists users (
   id          text primary key,          -- Clerk user ID (user_xxx)
-  email       text not null unique,
+  email       text,                      -- not unique: Clerk ids change between instances, emails do not
   name        text,
   plan        text not null default 'free' check (plan in ('free', 'pro', 'business')),
   created_at  timestamptz not null default now()

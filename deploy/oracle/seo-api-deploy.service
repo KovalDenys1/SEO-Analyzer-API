@@ -6,4 +6,5 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 User=ubuntu
+ExecStartPre=+/usr/local/bin/seo-api-fix-ownership
 ExecStart=/usr/local/bin/seo-api-deploy

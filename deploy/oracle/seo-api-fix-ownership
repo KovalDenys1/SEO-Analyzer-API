@@ -1,0 +1,6 @@
+#!/bin/sh
+# Run as root before each deploy: a git or file command run with sudo in /opt/seo-api leaves root-owned files that the ubuntu-run deploy cannot replace (30.10: stuck for three days).
+set -eu
+cd /opt/seo-api
+chown -R ubuntu:ubuntu .git
+git -c safe.directory=/opt/seo-api ls-files -z | xargs -0 -r -n 200 sh -c 'for f; do chown ubuntu:ubuntu "$f" "$(dirname "$f")"; done' _

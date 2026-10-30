@@ -1,5 +1,6 @@
 .env
 .env.*
+deploy/oracle/wrapper-db/service_role.jwt
 !.env.example
 .venv/
 __pycache__/

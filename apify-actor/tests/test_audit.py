@@ -81,6 +81,15 @@ async def test_unfetchable_url_becomes_free_error_item_and_run_continues(
     assert (summary.audited, summary.failed) == (1, 1)
 
 
+async def test_bot_protection_challenge_becomes_free_error_item(site: FakeSite) -> None:
+    ledger = Ledger()
+    summary = await run(site, ledger, urls=["https://acme.test/challenge", "https://acme.test/"])
+
+    assert ledger.events == [None, "page-audited"]
+    assert ledger.items[0]["error"]["code"] == "blocked_by_bot_protection"
+    assert (summary.audited, summary.failed) == (1, 1)
+
+
 async def test_unexpected_failure_on_one_url_does_not_stop_the_others(site: FakeSite) -> None:
     ledger = Ledger()
     await run(site, ledger, urls=["https://acme.test/boom", "https://acme.test/"])

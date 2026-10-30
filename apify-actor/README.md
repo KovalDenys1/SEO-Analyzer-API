@@ -8,6 +8,7 @@ Want to see a report first? Audit one page free in the browser, no account neede
 
 ## What you get
 
+- **Catches JavaScript shells.** A React, Vue or Vite page that sends an empty `<div id="root">` looks fine in a browser, and other audits either score it normally or call it thin content. This one names it (`content.javascript_shell`, with the byte and word counts), caps the score at 40 and puts server-rendering first, because that is what crawlers, link previews and AI assistants actually receive.
 - **Two separate scores, 0–100 with a letter grade.** Core SEO health across eight weighted categories, and SaaS acquisition and conversion readiness (value proposition, call to action, trust, product evidence).
 - **Issues with evidence.** Code, category, severity, score penalty and the data that triggered it.
 - **Fixes in priority order.** Action, reason, impact, effort, confidence and a validation step for each.
@@ -25,7 +26,7 @@ Want to see a report first? Audit one page free in the browser, no account neede
 | `quick` | Scoring long URL lists, lead qualification | one `quick` item per URL | `quick-score` |
 | `site` | A bounded crawl of a whole site | one `page` item per crawled page, then one `site` summary | `page-audited` per page, summary free |
 
-A URL that cannot be fetched (DNS failure, timeout, not HTML, blocked by the target) becomes an `error` item and is not charged.
+A URL that cannot be fetched (DNS failure, timeout, not HTML) or that answers with a bot-protection challenge (Cloudflare, DataDome, AWS WAF) becomes an `error` item and is not charged. A page that loads but returns 4xx or 5xx, or shows a login form, is audited as served and charged: the report puts the status first and caps its score at 20.
 
 ## Input
 
@@ -240,7 +241,7 @@ One per start URL, after its pages. Real output for a four-page site, shortened:
 
 ## Pricing
 
-Pay per event. There is no monthly rental, and platform usage is included in the event price.
+Pay per event. There is no monthly rental, and platform usage is included in the event price. Apify's free plan includes $5 of usage a month with no card, which is about 250 full page audits or 1,000 quick scores.
 
 | Event | Price | When |
 |---|---|---|
@@ -261,11 +262,11 @@ If you set a maximum charge for the run, the Actor checks it before fetching: a 
 
 ## What it does not do
 
-- It does not execute JavaScript. Content that only appears after client-side rendering is not seen.
+- It does not execute JavaScript. Content that only appears after client-side rendering is not seen; such a page is reported as a JavaScript shell.
 - It does not predict Google positions, traffic or revenue. Scores are diagnostics, and the weights and limitations are returned with them.
 - It has no keyword, backlink or SERP database.
 - It does not measure Core Web Vitals. Timing covers the HTML response only.
-- It does not rotate proxies or solve bot challenges. Sites that block data-centre traffic or need a login return an `error` item.
+- It does not rotate proxies or solve bot challenges. A challenge page becomes a free `error` item with the code `blocked_by_bot_protection`. A login page is audited as served.
 - A site audit is a bounded sample of up to 100 pages per start URL, not an exhaustive crawl.
 
 ## How it crawls

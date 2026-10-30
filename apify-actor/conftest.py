@@ -73,6 +73,12 @@ async def site() -> Any:
         fetched_paths.append(request.url.path)
         if request.url.path == "/boom":
             raise RuntimeError("socket exploded")
+        if request.url.path == "/challenge":
+            return httpx.Response(
+                403,
+                headers={"content-type": "text/html", "cf-mitigated": "challenge"},
+                content=b"<html><head><title>Just a moment...</title></head></html>",
+            )
         html = SITE.get(request.url.path)
         if html is None:
             return httpx.Response(404, headers={"content-type": "text/plain"}, content=b"gone")

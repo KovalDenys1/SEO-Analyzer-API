@@ -26,7 +26,7 @@ Want to see a report first? Audit one page free in the browser, no account neede
 | `quick` | Scoring long URL lists, lead qualification | one `quick` item per URL | `quick-score` |
 | `site` | A bounded crawl of a whole site | one `page` item per crawled page, then one `site` summary | `page-audited` per page, summary free |
 
-A URL that cannot be fetched (DNS failure, timeout, not HTML) or that answers with a bot-protection challenge (Cloudflare, DataDome, AWS WAF) becomes an `error` item and is not charged. A page that loads but returns 4xx or 5xx, or shows a login form, is audited as served and charged: the report puts the status first and caps its score at 20.
+A URL that cannot be fetched (DNS failure, timeout, not HTML) or that answers with a bot-protection challenge (Cloudflare, DataDome, AWS WAF, PerimeterX) becomes an `error` item and is not charged. A page that loads but returns 4xx or 5xx is audited as served and charged: the report puts the status first and caps its score at 20. A login form on a 200 page is audited like any other page.
 
 ## Input
 

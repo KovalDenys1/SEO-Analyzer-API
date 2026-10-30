@@ -14,6 +14,7 @@ from seo_analyzer.analyzer import AnalysisArtifact, Analyzer
 from seo_analyzer.fetcher import FetchError, SafeFetcher
 from seo_analyzer.models import PageType, Severity, SiteAuditRequest
 from seo_analyzer.saas import assess_site_strategy, classify_path
+from seo_analyzer.scoring import recommendation_order
 from seo_analyzer.utils import grade_for, normalize_url, origin_for, same_site, utc_now_iso
 
 
@@ -536,7 +537,7 @@ class SiteCrawler:
                         "issue_codes": [],
                     }
                 )
-        recommendations.sort(key=lambda item: (-item["priority"], item["code"]))
+        recommendations.sort(key=lambda item: recommendation_order(item["code"], item["priority"]))
 
         page_summaries = []
         for url, record in records:
@@ -683,4 +684,6 @@ def _aggregate_recommendations(
             item["priority"] = min(
                 100, round(recommendation.priority + min(20, item["affected_pages"] * 2))
             )
-    return sorted(grouped.values(), key=lambda item: (-item["priority"], item["code"]))
+    return sorted(
+        grouped.values(), key=lambda item: recommendation_order(item["code"], item["priority"])
+    )

@@ -6,7 +6,7 @@ from test_parser_scoring import VITE_SHELL_HTML, make_result
 from seo_analyzer.analyzer import Analyzer
 from seo_analyzer.fetcher import FetchError
 from seo_analyzer.parser import parse_page
-from seo_analyzer.scoring import apply_scoring
+from seo_analyzer.scoring import apply_scoring, recommendation_order
 
 CLOUDFLARE_CHALLENGE = b"""<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title>
 <meta name="robots" content="noindex,nofollow"></head><body><div class="main-wrapper">
@@ -15,6 +15,19 @@ CLOUDFLARE_CHALLENGE = b"""<!DOCTYPE html><html lang="en-US"><head><title>Just a
 
 PLAIN_FORBIDDEN = b"""<!DOCTYPE html><html lang="en"><head><title>403 Forbidden</title></head>
 <body><h1>Forbidden</h1><p>You don't have permission to access this resource.</p></body></html>"""
+
+DATADOME_BLOCK = b"""<html><head><title>example.com</title></head><body>
+<script src="https://ct.captcha-delivery.com/c.js"></script></body></html>"""
+
+PERIMETERX_BLOCK = b"""<!DOCTYPE html><html lang="en"><head><title>Access to this page has been denied</title>
+</head><body><div id="px-captcha"></div></body></html>"""
+
+AWS_WAF_CHALLENGE = b"""<!DOCTYPE html><html><head><title></title></head><body>
+<noscript>JavaScript is disabled</noscript><div id="challenge-container"></div></body></html>"""
+
+ORIGIN_MAINTENANCE_ON_CLOUDFLARE = b"""<!DOCTYPE html><html lang="en"><head><title>Down for maintenance</title>
+</head><body><h1>We will be back soon</h1><p>Planned maintenance until 06:00 UTC.</p>
+<script src="/cdn-cgi/challenge-platform/scripts/jsd/main.js"></script></body></html>"""
 
 ARTICLE_ABOUT_CHALLENGES = OPTIMIZED_HTML.replace(
     b"</body>", b"<p>How a security check such as Just a moment pages affects crawlers.</p></body>"
@@ -42,8 +55,10 @@ async def _analyze(status: int, headers: dict[str, str], body: bytes):
         (403, {"cf-mitigated": "challenge", "server": "cloudflare"}, CLOUDFLARE_CHALLENGE),
         (403, {"server": "cloudflare"}, CLOUDFLARE_CHALLENGE),
         (503, {"server": "cloudflare"}, CLOUDFLARE_CHALLENGE),
-        (403, {"x-datadome": "protected"}, PLAIN_FORBIDDEN),
+        (403, {"x-datadome": "protected"}, DATADOME_BLOCK),
         (405, {"x-amzn-waf-action": "captcha"}, PLAIN_FORBIDDEN),
+        (202, {"x-amzn-waf-action": "challenge"}, AWS_WAF_CHALLENGE),
+        (403, {}, PERIMETERX_BLOCK),
     ],
 )
 async def test_bot_protection_challenge_is_an_error_not_a_report(
@@ -58,6 +73,21 @@ async def test_bot_protection_challenge_is_an_error_not_a_report(
 async def test_plain_403_is_still_audited_as_served() -> None:
     report = await _analyze(403, {}, PLAIN_FORBIDDEN)
     assert report.fetch["status_code"] == 403
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("status", "headers", "body"),
+    [
+        (503, {"server": "cloudflare"}, ORIGIN_MAINTENANCE_ON_CLOUDFLARE),
+        (503, {"x-datadome": "protected"}, PLAIN_FORBIDDEN),
+    ],
+)
+async def test_real_error_page_behind_bot_protection_is_audited(
+    status: int, headers: dict[str, str], body: bytes
+) -> None:
+    report = await _analyze(status, headers, body)
+    assert report.fetch["status_code"] == status
 
 
 @pytest.mark.asyncio
@@ -91,6 +121,29 @@ def test_javascript_shell_symptoms_point_at_the_shell_instead_of_their_own_fix()
     assert all(issue.evidence["likely_cause"] == "content.javascript_shell" for issue in symptoms)
     recommended = {code for rec in recommendations for code in rec.issue_codes}
     assert not recommended & {issue.code for issue in symptoms}
+
+
+def test_shell_fix_outranks_a_noindex_on_a_commercial_page() -> None:
+    noindexed_shell = VITE_SHELL_HTML.replace(
+        b"<head>", b'<head><meta name="robots" content="noindex">', 1
+    )
+    _, issues, _, recommendations = _score(noindexed_shell)
+    assert "indexability.noindex" in {issue.code for issue in issues}
+    assert recommendations[0].code == "fix.content.javascript_shell"
+
+
+def test_gates_lead_site_wide_even_when_common_fixes_reach_100() -> None:
+    items = [
+        {"code": "fix.canonical.missing", "priority": 100},
+        {"code": "fix.content.javascript_shell", "priority": 100},
+        {"code": "fix.http.non_success_status", "priority": 100},
+    ]
+    items.sort(key=lambda item: recommendation_order(item["code"], item["priority"]))
+    assert [item["code"] for item in items] == [
+        "fix.http.non_success_status",
+        "fix.content.javascript_shell",
+        "fix.canonical.missing",
+    ]
 
 
 def test_error_status_page_fails_and_leads_with_the_status() -> None:

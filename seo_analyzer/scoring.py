@@ -784,6 +784,14 @@ SCORE_GATES = {
     "http.non_success_status": (20.0, 100),
     "content.javascript_shell": (40.0, 99),
 }
+
+
+def recommendation_order(code: str, priority: int) -> tuple[int, int, str]:
+    """Sort key that puts a gate's fix first, whatever the other priorities add up to."""
+    gate = SCORE_GATES.get(code.removeprefix("fix."))
+    return (-(gate[1] if gate else 0), -priority, code)
+
+
 SHELL_SYMPTOM_PREFIXES = ("headings.", "links.", "images.", "saas.", "content.possibly_thin")
 
 
@@ -921,7 +929,7 @@ def recommendations_from_issues(issues: list[Issue]) -> list[Recommendation]:
                 issue_codes=[issue.code],
             )
         )
-    return sorted(recommendations, key=lambda item: (-item.priority, item.code))
+    return sorted(recommendations, key=lambda item: recommendation_order(item.code, item.priority))
 
 
 def apply_scoring(

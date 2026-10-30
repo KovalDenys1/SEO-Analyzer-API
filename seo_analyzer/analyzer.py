@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 
+from seo_analyzer.botwall import raise_if_bot_protected
 from seo_analyzer.cache import AsyncTTLCache
 from seo_analyzer.config import Settings
 from seo_analyzer.fetcher import SafeFetcher
@@ -119,6 +120,7 @@ class Analyzer:
         include_subdomains: bool,
     ) -> AnalysisArtifact:
         fetch = await self.fetcher.fetch(url)
+        raise_if_bot_protected(fetch)
         parsed = parse_page(fetch, include_subdomains=include_subdomains)
         issues, score, recommendations = apply_scoring(
             parsed, requested_url=fetch.requested_url, final_url=fetch.final_url

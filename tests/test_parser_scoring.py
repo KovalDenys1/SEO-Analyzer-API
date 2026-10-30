@@ -215,7 +215,6 @@ def test_issue_engine_critical_and_operational_branches() -> None:
     assert {
         "http.non_success_status",
         "http.long_redirect_chain",
-        "indexability.noindex",
         "canonical.multiple",
         "title.missing",
         "description.multiple",

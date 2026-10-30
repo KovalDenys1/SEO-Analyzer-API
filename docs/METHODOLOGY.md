@@ -1,6 +1,6 @@
 # Scoring methodology
 
-Methodology version `2026.1` turns observed evidence into a prioritization aid. It deliberately keeps technical/on-page SEO health separate from SaaS acquisition and conversion readiness.
+Methodology version `2026.2` turns observed evidence into a prioritization aid. It deliberately keeps technical/on-page SEO health separate from SaaS acquisition and conversion readiness.
 
 ## Design rules
 
@@ -46,6 +46,21 @@ Open Graph/Twitter completeness is emitted as a SaaS distribution recommendation
 | 70–79.9 | C | fair |
 | 55–69.9 | D | weak |
 | below 55 | F | critical |
+
+### Gates
+
+Two failures mean the page cannot rank as it stands, however clean the rest of its HTML is. They cap the score and their fix is ranked first:
+
+| Issue | Score cap | Recommendation priority |
+|---|---:|---:|
+| `http.non_success_status` (the page answered 4xx or 5xx) | 20 | 100 |
+| `content.javascript_shell` (the HTML is empty until JavaScript runs) | 40 | 99 |
+
+On an error page, `indexability.noindex` is not reported, because error pages are routinely noindexed and the status is what needs fixing. On a JavaScript shell, heading, link, image, thin-content and `saas.*` issues are kept with `evidence.likely_cause = "content.javascript_shell"` and get no recommendation of their own: they describe the empty HTML, and server-rendering fixes them together. In both cases the SaaS score returns `applicable: false`.
+
+A response that is a bot-protection challenge (Cloudflare `cf-mitigated: challenge`, DataDome, AWS WAF captcha, or a 403/405/429/503 whose title or markup is a known challenge page) is not scored at all. The analyzer raises `blocked_by_bot_protection`, so the API answers with an error and the Apify actor writes a free `error` item.
+
+Added in `2026.2` (2026-10-30). Before that, a Vite shell and a 404 page could both score C.
 
 ### Issue semantics
 

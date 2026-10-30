@@ -101,7 +101,7 @@ class ScoreBreakdown(BaseModel):
     rating: str
     categories: dict[str, float]
     weights: dict[str, float]
-    methodology_version: str = "2026.1"
+    methodology_version: str = "2026.2"
 
 
 class PageAnalysis(BaseModel):

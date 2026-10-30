@@ -156,7 +156,8 @@ def detect_issues(parsed: ParsedPage, requested_url: str, final_url: str) -> lis
             )
         )
 
-    if indexability["noindex"]:
+    # Error pages are routinely noindexed; the status is the issue to fix, not the tag.
+    if indexability["noindex"] and 200 <= status_code < 300:
         severity = Severity.CRITICAL if page_type in COMMERCIAL_TYPES else Severity.HIGH
         issues.append(
             _issue(
@@ -400,9 +401,9 @@ def detect_issues(parsed: ParsedPage, requested_url: str, final_url: str) -> lis
                 "content.javascript_shell",
                 "content",
                 Severity.HIGH,
-                "Initial HTML contains very little readable content",
-                "The page may depend on client-side rendering. Google can render JavaScript, but rendering is delayed and many other crawlers cannot.",
-                "Server-render or pre-render critical headings, copy, links, and structured data; verify rendered HTML separately.",
+                "Crawlers get an empty page: the content is rendered by JavaScript",
+                "The HTML the server sends has almost no text, links or headings; they only appear after JavaScript runs in a browser. Google renders JavaScript later and not always, and most other crawlers, link previews and AI assistants never do, so they see an empty page.",
+                "Server-render or pre-render the page (SSR, static generation or a prerender service) so the HTML already contains the headings, copy, links and structured data. Then re-run this audit to confirm the HTML is no longer empty.",
                 evidence={
                     "word_count": word_count,
                     "html_bytes": fetch["content_bytes"],
@@ -777,6 +778,28 @@ def detect_issues(parsed: ParsedPage, requested_url: str, final_url: str) -> lis
     return issues
 
 
+# A page that fails one of these cannot rank as it stands, so the score is capped
+# however clean the rest of the HTML is, and its fix is ranked first.
+SCORE_GATES = {
+    "http.non_success_status": (20.0, 100),
+    "content.javascript_shell": (40.0, 99),
+}
+SHELL_SYMPTOM_PREFIXES = ("headings.", "links.", "images.", "saas.", "content.possibly_thin")
+
+
+def gate_for(issues: list[Issue]) -> str | None:
+    codes = {issue.code for issue in issues}
+    return next((code for code in SCORE_GATES if code in codes), None)
+
+
+def mark_shell_symptoms(issues: list[Issue]) -> None:
+    if not any(issue.code == "content.javascript_shell" for issue in issues):
+        return
+    for issue in issues:
+        if issue.code.startswith(SHELL_SYMPTOM_PREFIXES):
+            issue.evidence["likely_cause"] = "content.javascript_shell"
+
+
 def score_issues(issues: list[Issue]) -> ScoreBreakdown:
     deductions: dict[str, float] = defaultdict(float)
     for issue in issues:
@@ -789,6 +812,9 @@ def score_issues(issues: list[Issue]) -> ScoreBreakdown:
         sum(categories[category] * weight for category, weight in SEO_CATEGORY_WEIGHTS.items()),
         1,
     )
+    gate = gate_for(issues)
+    if gate is not None:
+        overall = min(overall, SCORE_GATES[gate][0])
     grade, rating = grade_for(overall)
     return ScoreBreakdown(
         overall=overall,
@@ -800,6 +826,7 @@ def score_issues(issues: list[Issue]) -> ScoreBreakdown:
 
 
 def score_saas(issues: list[Issue], page_type: PageType) -> dict[str, Any]:
+    gate = gate_for(issues)
     mapping = {
         "saas_value_proposition": "value_proposition",
         "saas_conversion": "conversion",
@@ -813,6 +840,20 @@ def score_saas(issues: list[Issue], page_type: PageType) -> dict[str, Any]:
     categories = {
         category: round(clamp(100 - deductions[category]), 1) for category in SAAS_CATEGORY_WEIGHTS
     }
+    if gate is not None:
+        return {
+            "applicable": False,
+            "overall": None,
+            "grade": None,
+            "rating": "not_applicable",
+            "categories": categories,
+            "weights": SAAS_CATEGORY_WEIGHTS,
+            "note": (
+                "Not scored: the page returned an error status."
+                if gate == "http.non_success_status"
+                else "Not scored: the HTML has no readable content to judge."
+            ),
+        }
     if page_type not in COMMERCIAL_TYPES:
         return {
             "applicable": False,
@@ -835,7 +876,7 @@ def score_saas(issues: list[Issue], page_type: PageType) -> dict[str, Any]:
         "rating": rating,
         "categories": categories,
         "weights": SAAS_CATEGORY_WEIGHTS,
-        "methodology_version": "2026.1",
+        "methodology_version": "2026.2",
         "note": "This is an explainable acquisition/conversion heuristic, not a search ranking prediction.",
     }
 
@@ -852,12 +893,17 @@ def recommendations_from_issues(issues: list[Issue]) -> list[Recommendation]:
     }
     recommendations: list[Recommendation] = []
     for issue in issues:
-        priority = round(
-            impact_score[issue.impact]
-            * effort_factor[issue.effort]
-            * severity_factor[issue.severity]
-            * issue.confidence
-        )
+        if issue.evidence.get("likely_cause"):
+            continue
+        if issue.code in SCORE_GATES:
+            priority = SCORE_GATES[issue.code][1]
+        else:
+            priority = round(
+                impact_score[issue.impact]
+                * effort_factor[issue.effort]
+                * severity_factor[issue.severity]
+                * issue.confidence
+            )
         recommendations.append(
             Recommendation(
                 code=f"fix.{issue.code}",
@@ -882,6 +928,7 @@ def apply_scoring(
     parsed: ParsedPage, *, requested_url: str, final_url: str
 ) -> tuple[list[Issue], ScoreBreakdown, list[Recommendation]]:
     issues = detect_issues(parsed, requested_url, final_url)
+    mark_shell_symptoms(issues)
     score = score_issues(issues)
     parsed.sections["saas"]["score"] = score_saas(issues, parsed.page_type)
     recommendations = recommendations_from_issues(issues)

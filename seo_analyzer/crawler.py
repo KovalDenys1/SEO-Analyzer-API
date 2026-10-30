@@ -587,7 +587,7 @@ class SiteCrawler:
                 "grade": grade,
                 "rating": rating,
                 "categories": category_scores,
-                "methodology_version": "2026.1",
+                "methodology_version": "2026.2",
                 "aggregation": "Page-type-weighted mean over the audited sample",
             },
             "sample": {

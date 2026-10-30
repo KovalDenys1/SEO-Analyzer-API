@@ -3,4 +3,10 @@
 set -eu
 cd /opt/seo-api
 chown -R ubuntu:ubuntu .git
-git -c safe.directory=/opt/seo-api ls-files -z | xargs -0 -r -n 200 sh -c 'for f; do chown ubuntu:ubuntu "$f" "$(dirname "$f")"; done' _
+chown ubuntu:ubuntu .
+git -c safe.directory=/opt/seo-api ls-files -z | xargs -0 -r -n 200 sh -c '
+for f; do
+  if [ -e "$f" ] || [ -L "$f" ]; then chown -h ubuntu:ubuntu "$f" || true; fi
+  d=$(dirname "$f")
+  while [ "$d" != . ]; do chown -h ubuntu:ubuntu "$d" 2>/dev/null || true; d=$(dirname "$d"); done
+done' _
